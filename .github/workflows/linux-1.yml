@@ -7,6 +7,9 @@ on:
   push:
     branches: [ build, test ]
 
+permissions:
+  contents: read | write
+
 jobs:
   build:
 
