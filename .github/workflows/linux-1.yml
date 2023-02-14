@@ -1,0 +1,58 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: linux-1
+
+on:
+  push:
+    branches: [ build, test ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-22.04
+    environment: build
+    if: "!contains(github.event.head_commit.message, '[skip build]') && !contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[skip linux]')"
+
+    steps:
+    - uses: mfinelli/setup-imagemagick@v2
+    - uses: actions/checkout@v2
+    - name: Use Node.js 16.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 16.x
+
+    - uses: actions/setup-java@v3
+      with:
+        distribution: temurin
+        java-version: 8
+
+    - run: npm i -g cordova cordova-icon cordova-splash
+    - name: Fixing Android Build Tool Issue
+      run: |
+          cd $ANDROID_HOME/build-tools/33.0.1
+          mv d8 dx
+          cd lib
+          mv d8.jar dx.jar
+    # before_install:
+    - run: npm run pre
+    - run: npm i
+    - run: npm run prepare
+    - run: cordova platform rm android
+    - run: cordova platform add android
+    - run: npm run icon
+    - run: npm run splash
+    - run: npm run build-android
+    - run: npm run cp
+    - run: ls
+    - run: cp -r platforms/android/platform_www ./
+    - run: tar -czvf android.tar.gz platform_www
+
+    - uses: xresloader/upload-to-github-release@v1.3.10
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        file: "com*.apk;*.gz"
+        draft: true
+        overwrite: true
+
