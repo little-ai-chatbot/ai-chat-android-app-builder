@@ -1,7 +1,7 @@
 {
   "name": "cordova-android-app-builder",
   "displayName": "Build Cordova Android app",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "[Experimental] Build Cordova Android app",
   "scripts": {
     "pre": "cp sample.env .env && node build/pre.js",
